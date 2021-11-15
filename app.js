@@ -52,8 +52,6 @@ io.sockets.on("connection", (socket) => {
 
     //client login || data: user, device
     socket.on('login', (data) => {
-        check_noti(data)
-        check_noti(socket.id)
 
         var info = JSON.parse(data)
 
