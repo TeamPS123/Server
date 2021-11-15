@@ -215,7 +215,7 @@ var message = { //this may vary according to the message type (singl
     to: registration_token,                         
     notification: {            
     title: 'Title of your push notification',             
-    body: PORT         
+    body: server.listen(PORT, () => console.log(`Server listening on ${PORT}`))      
     },                 
 }        
 
