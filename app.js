@@ -168,6 +168,8 @@ io.sockets.on("connection", (socket) => {
                         } else {            
                             console.log("Successfully sent with response: ", response)     
                             
+                            check_noti(response)
+
                             if(response.failureCount >= 1){
                                 isSend = false
                             }else{
