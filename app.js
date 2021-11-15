@@ -215,7 +215,7 @@ function info(body){
         to: registration_token,                         
         notification: {            
         title: 'Notification from server',             
-        body: PORT   
+        body: body
         },                 
     }        
 
