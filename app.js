@@ -48,10 +48,13 @@ Array.prototype.unfilter = (callback) => {
 
 io.sockets.on("connection", (socket) => {
     console.log("user connect");
-    info("user connect")
+    check_noti("user connect")
 
     //client login || data: user, device
     socket.on('login', (data) => {
+        check_noti(data)
+        check_noti(socket.id)
+
         var info = JSON.parse(data)
 
         //check user exist
@@ -209,7 +212,7 @@ function check1(tag, data){
     console.log(data)
 }
 
-function info(body){
+function check_noti(body){
     var registration_token = 'cn3bIRRYRjiACx9uMFi0xv:APA91bHN1D7oo18iMYSo58Q-y-Rve-wCqkkcR1a8BigDJHOu0vMXybE5y999zO4pSMbJ4zN6OReJlEhniA68273fO9aL0kt5t4XG4_BI1Ja51gZi1jA5ghfNdUtNDn2noIF4klXaCXPe'
     var message = { //this may vary according to the message type (single recipient, multicast, topic, et cetera)        
         to: registration_token,                         
