@@ -48,6 +48,7 @@ Array.prototype.unfilter = (callback) => {
 
 io.sockets.on("connection", (socket) => {
     console.log("user connect");
+    info("user connect")
 
     //client login || data: user, device
     socket.on('login', (data) => {
@@ -208,21 +209,23 @@ function check1(tag, data){
     console.log(data)
 }
 
+function info(body){
+    var registration_token = 'cn3bIRRYRjiACx9uMFi0xv:APA91bHN1D7oo18iMYSo58Q-y-Rve-wCqkkcR1a8BigDJHOu0vMXybE5y999zO4pSMbJ4zN6OReJlEhniA68273fO9aL0kt5t4XG4_BI1Ja51gZi1jA5ghfNdUtNDn2noIF4klXaCXPe'
+    var message = { //this may vary according to the message type (single recipient, multicast, topic, et cetera)        
+        to: registration_token,                         
+        notification: {            
+        title: 'Notification from server',             
+        body: PORT   
+        },                 
+    }        
+
+    fcm.send(message, function(err, response){        
+        if (err) {            
+        console.log("Something has gone wrong!")        
+        } else {            
+        console.log("Successfully sent with response: ", response)        
+        }    
+    })
+}
+
 server.listen(PORT, () => console.log(`Server listening on ${PORT}`));
-
-var registration_token = 'cn3bIRRYRjiACx9uMFi0xv:APA91bHN1D7oo18iMYSo58Q-y-Rve-wCqkkcR1a8BigDJHOu0vMXybE5y999zO4pSMbJ4zN6OReJlEhniA68273fO9aL0kt5t4XG4_BI1Ja51gZi1jA5ghfNdUtNDn2noIF4klXaCXPe'
-var message = { //this may vary according to the message type (single recipient, multicast, topic, et cetera)        
-    to: registration_token,                         
-    notification: {            
-    title: 'Title of your push notification',             
-    body: server.listen(PORT, () => console.log(`Server listening on ${PORT}`))      
-    },                 
-}        
-
-fcm.send(message, function(err, response){        
-    if (err) {            
-    console.log("Something has gone wrong!")        
-    } else {            
-    console.log("Successfully sent with response: ", response)        
-    }    
-})
