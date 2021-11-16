@@ -4,23 +4,6 @@ const { networkInterfaces } = require('os')
 var serviceAccount = require("./firebase.json")
 var fcm = new FCM(serviceAccount)   
 
-// var registration_token = 'cn3bIRRYRjiACx9uMFi0xv:APA91bHN1D7oo18iMYSo58Q-y-Rve-wCqkkcR1a8BigDJHOu0vMXybE5y999zO4pSMbJ4zN6OReJlEhniA68273fO9aL0kt5t4XG4_BI1Ja51gZi1jA5ghfNdUtNDn2noIF4klXaCXPe'
-// var message = { //this may vary according to the message type (single recipient, multicast, topic, et cetera)        
-//     to: registration_token,                         
-//     notification: {            
-//     title: 'Title of your push notification',             
-//     body: 'Body of your push notification1'         
-//     },                 
-// }        
-
-// fcm.send(message, function(err, response){        
-//     if (err) {            
-//     console.log("Something has gone wrong!")        
-//     } else {            
-//     console.log("Successfully sent with response: ", response)        
-//     }    
-// })
-
 //user || device || status || id
 var userList = []
 //ender || receiver || body || title 
@@ -155,7 +138,12 @@ io.sockets.on("connection", (socket) => {
                         to: value.device,
                         notification: {
                             title: info.title,
-                            body: info.body
+                            body: info.body,
+                            click_action: "com.example.demo_realtime_TARGET_NOTIFICATION",
+                            icon: "ic_baseline_assignment_24"
+                        },
+                        data:{
+                            billId: "SY1"
                         }
                     }
     
@@ -170,10 +158,10 @@ io.sockets.on("connection", (socket) => {
                             
                             // check_noti(response)
 
-                            if(response.failureCount >= 1){
-                                isSend = false
-                            }else{
+                            if(response.failureCount == 0){
                                 isSend = true
+                            }else{
+                                isSend = false
                             }
                         } 
                     })
@@ -213,22 +201,22 @@ function check1(tag, data){
 }
 
 function check_noti(body){
-    var registration_token = 'cn3bIRRYRjiACx9uMFi0xv:APA91bHN1D7oo18iMYSo58Q-y-Rve-wCqkkcR1a8BigDJHOu0vMXybE5y999zO4pSMbJ4zN6OReJlEhniA68273fO9aL0kt5t4XG4_BI1Ja51gZi1jA5ghfNdUtNDn2noIF4klXaCXPe'
-    var message = { //this may vary according to the message type (single recipient, multicast, topic, et cetera)        
-        to: registration_token,                         
-        notification: {            
-        title: 'Notification from server',             
-        body: body
-        },                 
-    }        
+    // var registration_token = 'cn3bIRRYRjiACx9uMFi0xv:APA91bHN1D7oo18iMYSo58Q-y-Rve-wCqkkcR1a8BigDJHOu0vMXybE5y999zO4pSMbJ4zN6OReJlEhniA68273fO9aL0kt5t4XG4_BI1Ja51gZi1jA5ghfNdUtNDn2noIF4klXaCXPe'
+    // var message = { //this may vary according to the message type (single recipient, multicast, topic, et cetera)        
+    //     to: registration_token,                         
+    //     notification: {            
+    //     title: 'Notification from server',             
+    //     body: body
+    //     },                 
+    // }        
 
-    fcm.send(message, function(err, response){        
-        if (err) {            
-        console.log("Something has gone wrong!")        
-        } else {            
-        console.log("Successfully sent with response: ", response)        
-        }    
-    })
+    // fcm.send(message, function(err, response){        
+    //     if (err) {            
+    //     console.log("Something has gone wrong!")        
+    //     } else {            
+    //     console.log("Successfully sent with response: ", response)        
+    //     }    
+    // })
 }
 
 server.listen(PORT, () => console.log(`Server listening on ${PORT}`));
