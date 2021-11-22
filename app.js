@@ -1,4 +1,5 @@
 // connect firebase
+const { CONNREFUSED } = require('dns')
 var FCM = require('fcm-node')
 const { networkInterfaces } = require('os')
 var serviceAccount = require("./firebase.json")
@@ -91,8 +92,13 @@ io.sockets.on("connection", (socket) => {
     })    
 
     //send notification || data: sender, receiver, title, body
-    socket.on("notification", (data) => {
-        send(data)
+    socket.on("notificationFromRes", (data) => {
+        send(data, 2)
+    })  
+
+    //send notification || data: sender, receiver, title, body: object => reserveTableId, quantity, time, restaurantId, name, phone, promotionId
+    socket.on("notificationFromUser", (data) => {
+        send(data, 1)
     })  
 
     //client signout
@@ -109,7 +115,7 @@ io.sockets.on("connection", (socket) => {
     })
 
     //send message to user receiver
-    function send(data){
+    function send(data, code){
         var info = JSON.parse(data)
 
         //check send message to user receiver
@@ -129,28 +135,32 @@ io.sockets.on("connection", (socket) => {
                 //send user receiver is active
                 for(const item of user_receiver_true){
                     socket.to(item.id).emit("send_notication", {sender: info.sender, body: info.body, title: info.title})
+
+                    //notification from Res to User
+                    if(code == 2){
+                        var message = messageFCM(item.device, info, "com.example.demo_realtime_TARGET_NOTIFICATION", "ic_baseline_assignment_24", code)
+                        
+                        fcm.send(message, function(err, response){
+                            if (err) {            
+                                console.log("Something has gone wrong!")
+                                
+                                isSend = false
+                            } else {            
+                                console.log("Successfully sent with response: ", response)     
+                            }
+                        })
+                    }
                 }
             }else{
                 //send user receiver with all device
                 for(const value of user_receiver){
-                    //create message
-                    var message = {
-                        to: value.device,
-                        notification: {
-                            title: info.title,
-                            body: info.body,
-                            click_action: "com.example.demo_realtime_TARGET_NOTIFICATION",
-                            icon: "ic_baseline_assignment_24"
-                        },
-                        data:{
-                            billId: "SY1"
-                        }
-                    }
-    
+
+                    var message = messageFCM(value.device, info, "com.example.demo_realtime_TARGET_NOTIFICATION", "ic_baseline_assignment_24", code)
+
                     //send firebase
                     fcm.send(message, function(err, response){
                         if (err) {            
-                            console.log("Something has gone wrong!")
+                            console.log("error: "+err)
                             
                             isSend = false
                         } else {            
@@ -182,6 +192,34 @@ io.sockets.on("connection", (socket) => {
         }
     
         check_log_messageList()
+    }
+
+    //create object message to FCM
+    function messageFCM(device, info, click_action, icon, code){
+        var body
+
+        //notification From User
+        if(code == 1){
+            body ="Bạn có 1 thông báo mới"
+        }else{
+            body = info.body
+        }
+
+        //create message
+        var message = {
+            to: device,
+            notification: {
+                title: info.title,
+                body: body,
+                click_action: click_action,//"com.example.demo_realtime_TARGET_NOTIFICATION",
+                icon: icon,//"ic_baseline_assignment_24"
+            },
+            data:{
+                // body: info.body
+            }
+        }
+        console.log("body: "+body)
+        return message
     }
 })
 
