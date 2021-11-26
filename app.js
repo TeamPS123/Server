@@ -16,7 +16,7 @@ const app = require('express')();
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 
-const PORT = process.env.PORT || 3030
+const PORT = process.env.PORT || 3000
 
 //delete message received
 Array.prototype.unfilter = (callback) => {
@@ -91,12 +91,12 @@ io.sockets.on("connection", (socket) => {
         check("disconnect")
     })    
 
-    //send notification || data: sender, receiver, title, body
+    //send notification || data: sender, receiver, title, body: object => notification, reserveTableId 
     socket.on("notificationFromRes", (data) => {
         send(data, 2)
     })  
 
-    //send notification || data: sender, receiver, title, body: object => reserveTableId, quantity, time, restaurantId, name, phone, promotionId
+    //send notification || data: sender, receiver, title, body: object => reserveTableId, quantity, time, restaurantId, name, phone, promotionId, note
     socket.on("notificationFromUser", (data) => {
         send(data, 1)
     })  
@@ -136,26 +136,25 @@ io.sockets.on("connection", (socket) => {
                 for(const item of user_receiver_true){
                     socket.to(item.id).emit("send_notication", {sender: info.sender, body: info.body, title: info.title})
 
-                    //notification from Res to User
-                    if(code == 2){
-                        var message = messageFCM(item.device, info, "com.example.demo_realtime_TARGET_NOTIFICATION", "ic_baseline_assignment_24", code)
-                        
-                        fcm.send(message, function(err, response){
-                            if (err) {            
-                                console.log("Something has gone wrong!")
-                                
-                                isSend = false
-                            } else {            
-                                console.log("Successfully sent with response: ", response)     
-                            }
-                        })
-                    }
+
+                    var message = messageFCM(item.device, info, "ic_baseline_assignment_24", code)
+                    
+                    fcm.send(message, function(err, response){
+                        if (err) {            
+                            console.log("Something has gone wrong!")
+                            
+                            isSend = false
+                        } else {            
+                            console.log("Successfully sent with response: ", response)     
+                        }
+                    })
+
                 }
             }else{
                 //send user receiver with all device
                 for(const value of user_receiver){
 
-                    var message = messageFCM(value.device, info, "com.example.demo_realtime_TARGET_NOTIFICATION", "ic_baseline_assignment_24", code)
+                    var message = messageFCM(value.device, info, "ic_baseline_assignment_24", code)
 
                     //send firebase
                     fcm.send(message, function(err, response){
@@ -195,14 +194,31 @@ io.sockets.on("connection", (socket) => {
     }
 
     //create object message to FCM
-    function messageFCM(device, info, click_action, icon, code){
-        var body
+    function messageFCM(device, info, icon, code){
+        var body, click_action, data
 
         //notification From User
         if(code == 1){
+            click_action = "com.psteam.foodlocationbusiness_Res"
             body ="Bạn có 1 thông báo mới"
+            data = {
+                reserveTableId: info.body.reserveTableId,
+                quantity: info.body.quantity+"",
+                time: info.body.time,
+                restaurantId: info.body.restaurantId,
+                name: info.body.name,
+                phone: info.body.phone,
+                promotionId: info.body.promotionId,
+                note: info.body.note,
+                userId: info.sender
+            }
         }else{
-            body = info.body
+            click_action = "com.psteam.location_User"
+            body = info.body.notification
+            data = {
+                notification: info.body.notification,
+                reserveTableId: info.body.reserveTableId
+            }
         }
 
         //create message
@@ -211,12 +227,10 @@ io.sockets.on("connection", (socket) => {
             notification: {
                 title: info.title,
                 body: body,
-                click_action: click_action,//"com.example.demo_realtime_TARGET_NOTIFICATION",
+                click_action: click_action ,//"com.example.demo_realtime_TARGET_NOTIFICATION",
                 icon: icon,//"ic_baseline_assignment_24"
             },
-            data:{
-                // body: info.body
-            }
+            data: data
         }
         console.log("body: "+body)
         return message
@@ -239,22 +253,22 @@ function check1(tag, data){
 }
 
 function check_noti(body){
-    var registration_token = 'cn3bIRRYRjiACx9uMFi0xv:APA91bHN1D7oo18iMYSo58Q-y-Rve-wCqkkcR1a8BigDJHOu0vMXybE5y999zO4pSMbJ4zN6OReJlEhniA68273fO9aL0kt5t4XG4_BI1Ja51gZi1jA5ghfNdUtNDn2noIF4klXaCXPe'
-    var message = { //this may vary according to the message type (single recipient, multicast, topic, et cetera)        
-        to: registration_token,                         
-        notification: {            
-        title: 'Notification from server',             
-        body: body
-        },                 
-    }        
+    // var registration_token = 'cn3bIRRYRjiACx9uMFi0xv:APA91bHN1D7oo18iMYSo58Q-y-Rve-wCqkkcR1a8BigDJHOu0vMXybE5y999zO4pSMbJ4zN6OReJlEhniA68273fO9aL0kt5t4XG4_BI1Ja51gZi1jA5ghfNdUtNDn2noIF4klXaCXPe'
+    // var message = { //this may vary according to the message type (single recipient, multicast, topic, et cetera)        
+    //     to: registration_token,                         
+    //     notification: {            
+    //     title: 'Notification from server',             
+    //     body: body
+    //     },                 
+    // }        
 
-    fcm.send(message, function(err, response){        
-        if (err) {            
-        console.log("Something has gone wrong!")        
-        } else {            
-        console.log("Successfully sent with response: ", response)        
-        }    
-    })
+    // fcm.send(message, function(err, response){        
+    //     if (err) {            
+    //     console.log("Something has gone wrong!")        
+    //     } else {            
+    //     console.log("Successfully sent with response: ", response)        
+    //     }    
+    // })
 }
 
 server.listen(PORT, () => console.log(`Server listening on ${PORT}`));
